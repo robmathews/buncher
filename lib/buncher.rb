@@ -1,4 +1,5 @@
 require 'buncher/buncher'
+require 'array'
 module Buncher
   VERSION = "0.0.1"
   # your cluster needs to look like this. Make a bunch of them and pass them in. It's ok to pass in empty elements to start.
