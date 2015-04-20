@@ -71,7 +71,7 @@ warnflags = -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long 
 CFLAGS   = -fno-common  -O3 -Wno-error=shorten-64-to-32  -pipe $(ARCH_FLAG)
 INCFLAGS = -I. -I$(arch_hdrdir) -I$(hdrdir)/ruby/backward -I$(hdrdir) -I$(srcdir)
 DEFS     = 
-CPPFLAGS =  -I/Users/rob/.rbenv/versions/1.9.3-p547/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE $(DEFS) $(cppflags)
+CPPFLAGS =  -Iext/boost/1.57.0/include -I/Users/rob/.rbenv/versions/1.9.3-p547/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE $(DEFS) $(cppflags)
 CXXFLAGS = $(CFLAGS) $(cxxflags)
 ldflags  = -L. -L/Users/rob/.rbenv/versions/1.9.3-p547/lib  -L/usr/local/lib
 dldflags = -Wl,-undefined,dynamic_lookup -Wl,-multiply_defined,suppress -Wl,-flat_namespace 
@@ -104,8 +104,8 @@ TOUCH = exit >
 
 preload = 
 
-libpath = . $(libdir)
-LIBPATH =  -L. -L$(libdir)
+libpath = . $(libdir) ext/boost/1.57.0/lib
+LIBPATH =  -L. -L$(libdir) -Lext/boost/1.57.0/lib
 DEFFILE = 
 
 CLEANFILES = mkmf.log
@@ -117,8 +117,8 @@ extout_prefix =
 target_prefix = 
 LOCAL_LIBS = 
 LIBS =   -lpthread -ldl -lobjc 
-SRCS = init.c
-OBJS = init.o
+SRCS = init.c cluster.cpp
+OBJS = init.o cluster.o
 TARGET = buncher
 TARGET_NAME = buncher
 TARGET_ENTRY = Init_$(TARGET_NAME)
@@ -213,7 +213,7 @@ site-install-rb: install-rb
 $(DLLIB): $(OBJS) Makefile
 	$(ECHO) linking shared-object $(DLLIB)
 	-$(Q)$(RM) $(@)
-	$(Q) $(LDSHARED) -o $@ $(OBJS) $(LIBPATH) $(DLDFLAGS) $(LOCAL_LIBS) $(LIBS)
+	$(Q) $(LDSHAREDXX) -o $@ $(OBJS) $(LIBPATH) $(DLDFLAGS) $(LOCAL_LIBS) $(LIBS)
 	$(Q) $(POSTLINK)
 
 

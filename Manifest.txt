@@ -3,6 +3,6 @@ History.txt
 Manifest.txt
 README.txt
 Rakefile
-bin/buncher
+lib/buncher/buncher.bundle
 lib/buncher.rb
 test/test_buncher.rb
