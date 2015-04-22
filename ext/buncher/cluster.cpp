@@ -30,29 +30,23 @@ Element::Element(VALUE rb_element)
   }  
 }
 
+double Element::squared_distance(Element& other)
+{
+  double rslt=0.0;
+  for(int iii=0;iii<size();iii++){
+      double distance = (*this)[iii] - other[iii];
+      rslt+=distance*distance;
+  }
+  return rslt;
+}
+
 Element Element::distance(Element& other)
 {
   Element rslt;
   rslt.reserve(size());
-  for(int iii=0;iii<size();iii++)
-    rslt[iii] = (*this)[iii] - other[iii];
-  return rslt;
-}
-
-Element Element::square()
-{
-  Element rslt;
-  rslt.reserve(size());
-  for(int iii=0;iii<size();iii++)
-    rslt[iii] = (*this)[iii] *  (*this)[iii];
-  return rslt;
-}
-
-double Element::sum()
-{
-  double rslt = 0.0;
-  for(int iii=0;iii<size();iii++)
-    rslt+=(*this)[iii];
+  for(int iii=0;iii<size();iii++){
+      rslt[iii] = (*this)[iii] - other[iii];
+  }
   return rslt;
 }
 
@@ -150,7 +144,7 @@ double min_distance(Bunches& centers, Element& element)
 {
   double val = std::numeric_limits<double>::max();
   for(int iii=0;iii<centers.size();iii++)
-    val = min(centers[iii].center.distance_squared(element), val);
+    val = min(centers[iii].center.squared_distance(element), val);
   return val;
 }
 
@@ -225,7 +219,7 @@ double calculate_distance(Bunches old_bunches, Bunches& new_bunches)
   BOOST_FOREACH(Bunch new_bunch, new_bunches)
   {
     int index = new_bunch.closest(old_bunches);
-    rslt+=old_bunches[index].distance_squared(new_bunch);
+    rslt+=old_bunches[index].squared_distance(new_bunch);
     old_bunches.erase(old_bunches.begin()+index);
   }
   return rslt;
@@ -237,7 +231,7 @@ int Bunch::closest(Bunches& other)
   double best_distance = std::numeric_limits<double>::max();
   for(int iii=0;iii<other.size();iii++)
   {
-    double distance = distance_squared(other[iii]);
+    double distance = squared_distance(other[iii]);
     if(distance < best_distance)
     {
       best_bunch = iii;
@@ -279,7 +273,7 @@ void Job::run()
     Bunch* best_bunch(NULL);
     double best_distance = std::numeric_limits<double>::max();
     BOOST_FOREACH(Bunch& bunch, bunches){
-      double distance = bunch.center.distance(element).square().sum();
+      double distance = bunch.center.squared_distance(element);
       if(distance < best_distance)
       {
         best_bunch = &bunch;
@@ -292,10 +286,14 @@ void Job::run()
 
 extern "C" VALUE distortion(VALUE rb_cluster)
 {
+  printf("distortion: start\n");
   Element center(::rb_funcall(rb_cluster, rb_intern("center"),0,NULL));
+  printf("distortion: center.size()=%lu\n",center.size());
   Elements elements(::rb_funcall(rb_cluster, rb_intern("elements"),0,NULL));
   double sum=0.0;
-  BOOST_FOREACH(Element element, elements) sum+=element.distance_squared(center);
+  BOOST_FOREACH(Element element, elements) {printf("distortion: element.squared_distance %f\n",element.squared_distance(center));}
+  BOOST_FOREACH(Element element, elements) {sum+=element.squared_distance(center);}
+  printf("distortion: elements.size()=%lu, sum was %f\n",elements.size(),sum);
   return DBL2NUM(sum);
 }
 

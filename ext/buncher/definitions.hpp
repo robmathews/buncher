@@ -11,8 +11,6 @@ extern "C" {
 extern "C" VALUE cluster_class();
 extern "C" VALUE array_class();
 
-#include "definitions.hpp"
-
 using namespace std;
 class Element : public vector<double>
 {
@@ -21,12 +19,8 @@ public:
   Element(VALUE rb_obj);
   VALUE rb_obj;
   operator VALUE() {return rb_obj;}
-  double distance_squared(Element& other){
-    return distance(other).square().sum();
-  }
+  double squared_distance(Element& other);
   Element distance(Element& other);
-  Element square();
-  double sum();
 };
 
 class Elements: public vector<Element>
@@ -36,7 +30,6 @@ public:
   Elements(VALUE rb_obj);
   operator VALUE();
   Element calculate_center();
-
 };
 
 
@@ -50,9 +43,9 @@ public:
   Elements elements;
   void clear() {elements.clear();}
   void calculate_center();
-  double distance_squared(Bunch& bunch)
+  double squared_distance(Bunch& bunch)
   {
-    return center.distance_squared(bunch.center);
+    return center.squared_distance(bunch.center);
   }
   // index of closest bunch
   int closest(Bunches& other);

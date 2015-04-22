@@ -17,6 +17,8 @@ module Buncher
     def size
       elements.size
     end
+
+    # distortion - C++ code
   end
 
   # split array into several equal sized parts
@@ -75,7 +77,7 @@ module Buncher
       last_fK, last_sK, last_aK = fK(centers,last_sK, last_aK)
       puts "#{number_clusters}: fK() = #{last_fK}, last_sK=#{last_sK} last_aK=#{last_aK} "
       solutions[last_fK]=centers
-      # break if number_clusters == 3 ## debugging
+      # break if number_clusters == 2 ## debugging
     end
     min_fK =solutions.keys.sort.first
     if min_fK > 0.85
