@@ -1,6 +1,6 @@
 require 'buncher/buncher'
 module Buncher
-  VERSION = "1.0.0"
+  VERSION = "1.0.1"
   # your cluster needs to look like this. Make a bunch of them and pass them in. It's ok to pass in empty elements to start.
   class Cluster
     attr_accessor :elements
@@ -67,7 +67,7 @@ module Buncher
     # try all the sizes of clusters up to #elements. Ok, sure we could probably do something like 25% .. ok, I did
     # that.
     not_clustered = last_sK = last_aK =last_fK=nil
-    max_clusters=[1,elements.size/4].max
+    max_clusters=[1,elements.size].max
     (1..max_clusters).each do |number_clusters|
       initial_centers = choose_centers(elements, number_clusters) # C++ Native code
       centers = initial_centers.map(&:dup)
