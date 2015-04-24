@@ -64,7 +64,7 @@ def plot(file_name,points,centers, initial_centers=nil)
 end
 
 class TestBuncher < Minitest::Test
-WORKING=<<-EOS
+WORKING=<<-'EOS'
   def test_should_find_the_one_center
       elements = [[1,1]]
       starting_centers = elements.sample(1).map {|aaa| Buncher::Cluster.new(aaa)}
@@ -93,14 +93,25 @@ WORKING=<<-EOS
       dump(new_centers)
       assert_equal(new_centers.size,1)
   end
+  def test_choose_centers_wrapper2
+      elements = init_data(100,3)
+      new_centers = Buncher::choose_centers(elements, 3)
+      plot("/tmp/kmeans_initial_#{new_centers.size}.png",elements, new_centers)
+      dump(new_centers)
+      `open /tmp/kmeans_initial_#{new_centers.size}.png`
+      assert_equal(new_centers.size,3)
+  end
 EOS
 
   def test_gaussian_distribution_of_100_points_in_3_clusters
-    1.times do |run|
-      srand(843284148793854177950180651080082381)
+    12.times do |run|
+      # srand(843284148793854177950180651080082381)
       elements = init_data(100,3)
       # elements.each {|eee| puts "#{eee[0]},#{eee[1]}"}
-      new_centers = Buncher::cluster(elements) {|elements,centers, initial_centers| plot("/tmp/#{run}_centers_#{centers.size}.png",elements,centers, initial_centers)}
+      # new_centers = Buncher::cluster(elements) {|elements,centers, initial_centers| puts "run #{run} setup";plot("/tmp/#{run}_centers_#{centers.size}.png",elements,initial_centers)}
+      new_centers = Buncher::cluster(elements) {|elements,centers, initial_centers| 
+        plot("/tmp/#{run}_centers_#{centers.size}.png",elements,centers, initial_centers)
+      }
       puts "run #{run}: k is #{new_centers.size}, seed was #{srand}"
       puts "ERROR "*4 if new_centers.size != 3
       puts
