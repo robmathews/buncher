@@ -75,7 +75,8 @@ module Buncher
       yield(elements, centers, initial_centers) if block_given?
       not_clustered ||=centers
       last_fK, last_sK, last_aK = fK(centers,last_sK, last_aK)
-      puts "#{number_clusters}: fK() = #{last_fK}, last_sK=#{last_sK} last_aK=#{last_aK} "
+      puts "summary #{number_clusters}: fK() = #{last_fK}, last_sK=#{last_sK} last_aK=#{last_aK} "
+      puts
       solutions[last_fK]=centers
       # break if number_clusters == 2 ## debugging
     end

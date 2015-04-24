@@ -171,9 +171,10 @@ extern "C" VALUE choose_centers(VALUE klass, VALUE rb_elements, VALUE rb_number_
     double sum=0.0;
     for(int jjj=0;jjj<elements.size();jjj++)
     {
-      sum+=min_distance(centers, elements[jjj]);
+      double distance =min_distance(centers, elements[jjj]);
+      sum+=distance;
       Probability_bucket bucket;
-      bucket.probability_sum = sum;
+      bucket.probability_sum = distance;
       bucket.element = &elements[jjj];
       probability_distribution.push_back(bucket);
     }
@@ -184,8 +185,11 @@ extern "C" VALUE choose_centers(VALUE klass, VALUE rb_elements, VALUE rb_number_
       Probability_bucket& bucket = probability_distribution[yyy];
       cutoff-=bucket.probability_sum;
       if(cutoff <=0)
+      {
         break;
+      }
     }
+    // printf("choose_centers chose %d\n",yyy);
     Bunch next_center(elements[yyy]);
     centers.push_back(next_center);
     elements.erase(elements.begin() + yyy);
@@ -286,14 +290,14 @@ void Job::run()
 
 extern "C" VALUE distortion(VALUE rb_cluster)
 {
-  printf("distortion: start\n");
+  // printf("distortion: start\n");
   Element center(::rb_funcall(rb_cluster, rb_intern("center"),0,NULL));
-  printf("distortion: center.size()=%lu\n",center.size());
+  // printf("distortion: center.size()=%lu\n",center.size());
   Elements elements(::rb_funcall(rb_cluster, rb_intern("elements"),0,NULL));
   double sum=0.0;
-  BOOST_FOREACH(Element element, elements) {printf("distortion: element.squared_distance %f\n",element.squared_distance(center));}
+  // BOOST_FOREACH(Element element, elements) {printf("distortion: element.squared_distance %f\n",element.squared_distance(center));}
   BOOST_FOREACH(Element element, elements) {sum+=element.squared_distance(center);}
-  printf("distortion: elements.size()=%lu, sum was %f\n",elements.size(),sum);
+  // printf("distortion: elements.size()=%lu, sum was %f\n",elements.size(),sum);
   return DBL2NUM(sum);
 }
 
