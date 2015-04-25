@@ -2,6 +2,7 @@
 #include <random>
 #include <limits>
 #include <boost/foreach.hpp>
+#include <math.h>
 
 VALUE new_array()
 {
@@ -19,6 +20,16 @@ VALUE element_at(VALUE rb_array, int index)
     return rb_funcall(rb_array, rb_intern("at"),1,INT2NUM(index));
 }
 
+Weights::Weights(VALUE rb_element)
+{
+  int element_size = array_size(rb_element);
+  for(int jjj=0;jjj<element_size;jjj++)
+  {
+    double value = NUM2DBL(element_at(rb_element, jjj));
+    push_back(value);
+  }  
+}
+
 Element::Element(VALUE rb_element)
 {
   int element_size = array_size(rb_element);
@@ -30,25 +41,23 @@ Element::Element(VALUE rb_element)
   }  
 }
 
-double Element::squared_distance(Element& other)
+double Element::squared_distance(Element& other, Weights& weights)
 {
-  double rslt=0.0;
-  for(int iii=0;iii<size();iii++){
-      double distance = (*this)[iii] - other[iii];
-      rslt+=distance*distance;
-  }
-  return rslt;
+  return pow(distance(other, weights),2);
 }
 
-Element Element::distance(Element& other)
+double Element::distance(Element& other, Weights& weights)
 {
-  Element rslt;
-  rslt.reserve(size());
+  double rslt=0.0;
+  double sum=0.0;
   for(int iii=0;iii<size();iii++){
-      rslt[iii] = (*this)[iii] - other[iii];
+      double distance = (*this)[iii] - other[iii];
+      sum+=weights[iii];
+      rslt+=abs(distance)*weights[iii];
   }
-  return rslt;
+  return rslt/sum;
 }
+
 
 Elements::Elements(VALUE rb_elements)
 {
@@ -144,7 +153,7 @@ double min_distance(Bunches& centers, Element& element)
 {
   double val = std::numeric_limits<double>::max();
   for(int iii=0;iii<centers.size();iii++)
-    val = min(centers[iii].center.squared_distance(element), val);
+    val = min(centers[iii].center.squared_distance(element,centers[iii].weights), val);
   return val;
 }
 
@@ -156,13 +165,14 @@ template<typename T> T dice(T max)
   return dis(gen);  
 }
 
-extern "C" VALUE choose_centers(VALUE klass, VALUE rb_elements, VALUE rb_number_centers)
+extern "C" VALUE choose_centers(VALUE klass, VALUE rb_elements, VALUE rb_weights, VALUE rb_number_centers)
 {
   Elements elements(rb_elements);
+  Weights weights(rb_weights);
   int number_centers = NUM2INT(rb_number_centers);
   int random_index = dice(elements.size()-1);
   Bunches centers;
-  Bunch center(elements[random_index]);
+  Bunch center(elements[random_index],weights);
   centers.push_back(center);
   elements.erase(elements.begin() + random_index);
   for(int iii=1;iii<number_centers;iii++)
@@ -190,25 +200,26 @@ extern "C" VALUE choose_centers(VALUE klass, VALUE rb_elements, VALUE rb_number_
       }
     }
     // printf("choose_centers chose %d\n",yyy);
-    Bunch next_center(elements[yyy]);
+    Bunch next_center(elements[yyy],weights);
     centers.push_back(next_center);
     elements.erase(elements.begin() + yyy);
   }
   return centers;
 }
 
-Bunches::Bunches(VALUE rb_centers)
+Bunches::Bunches(VALUE rb_centers, VALUE rb_weights)
 {
   int size = array_size(rb_centers);
   for(int iii=0;iii<size;iii++)
-    push_back(Bunch(element_at(rb_centers,iii)));
+    push_back(Bunch(element_at(rb_centers,iii), rb_weights));
 }
 
-Bunch::Bunch(VALUE rb_cluster){
+Bunch::Bunch(VALUE rb_cluster, VALUE rb_weights){
   VALUE rb_center=::rb_funcall(rb_cluster, rb_intern("center"),0);
   VALUE rb_elements=::rb_funcall(rb_cluster, rb_intern("elements"),0);
   center=rb_center;
   elements=rb_elements;
+  weights=rb_weights;
 }
 
 void Bunch::calculate_center()
@@ -245,10 +256,18 @@ int Bunch::closest(Bunches& other)
   return best_bunch;
 }
 
-extern "C" VALUE kmeans(VALUE klass, VALUE rb_centers, VALUE rb_elements)
+extern "C" VALUE distance(VALUE klass, VALUE rb_element1, VALUE rb_element2, VALUE rb_weights)
+{
+  Element a(rb_element1);
+  Element b(rb_element2);
+  Weights weights(rb_weights);
+  return DBL2NUM(a.distance(b, weights));
+}
+
+extern "C" VALUE kmeans(VALUE klass, VALUE rb_centers, VALUE rb_elements, VALUE rb_weights)
 {
   Elements elements(rb_elements);
-  Bunches centers(rb_centers);
+  Bunches centers(rb_centers,rb_weights);
   Bunches previous_iteration;
   int count = 0;
   while(true)
@@ -262,7 +281,7 @@ extern "C" VALUE kmeans(VALUE klass, VALUE rb_centers, VALUE rb_elements)
     if(!previous_iteration.empty())
     {
       double distance = calculate_distance(previous_iteration, centers);
-      if(distance < 0.0001)
+      if(distance < 0.00001)
         break;
     }
     previous_iteration = centers;
@@ -277,7 +296,7 @@ void Job::run()
     Bunch* best_bunch(NULL);
     double best_distance = std::numeric_limits<double>::max();
     BOOST_FOREACH(Bunch& bunch, bunches){
-      double distance = bunch.center.squared_distance(element);
+      double distance = bunch.center.squared_distance(element,bunch.weights);
       if(distance < best_distance)
       {
         best_bunch = &bunch;
@@ -288,15 +307,13 @@ void Job::run()
   }
 }
 
-extern "C" VALUE distortion(VALUE rb_cluster)
+extern "C" VALUE distortion(VALUE rb_cluster, VALUE rb_weights)
 {
-  // printf("distortion: start\n");
   Element center(::rb_funcall(rb_cluster, rb_intern("center"),0,NULL));
-  // printf("distortion: center.size()=%lu\n",center.size());
   Elements elements(::rb_funcall(rb_cluster, rb_intern("elements"),0,NULL));
+  Weights weights(rb_weights);
   double sum=0.0;
-  // BOOST_FOREACH(Element element, elements) {printf("distortion: element.squared_distance %f\n",element.squared_distance(center));}
-  BOOST_FOREACH(Element element, elements) {sum+=element.squared_distance(center);}
+  BOOST_FOREACH(Element element, elements) {sum+=element.squared_distance(center,weights);}
   // printf("distortion: elements.size()=%lu, sum was %f\n",elements.size(),sum);
   return DBL2NUM(sum);
 }
