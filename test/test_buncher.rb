@@ -12,7 +12,7 @@ def init_data(number_points, number_clusters)
   elements=[]
   extra=0
   index=0
-  seed=[[0,1],[0,0],[1,0]]
+  seed=[[0,1],[0,0],[1,0],[1,1]]
   number_clusters.times do
     # gens = [Rubystats::NormalDistribution.new(rand(0..1), 0.05), Rubystats::NormalDistribution.new(rand(0..1), 0.05)]
     gens = [Rubystats::NormalDistribution.new(seed[index][0], 0.05), Rubystats::NormalDistribution.new(seed[index][1], 0.05)]
@@ -94,11 +94,11 @@ class TestBuncher < Minitest::Test
       assert_equal(new_centers.size,3)
   end
   # EOS
-  def test_should_find_one_cluster
-      elements = [[1,1]]
-      new_centers = Buncher::cluster(elements,[1]*2)
+  def test_min_size_works
+      elements =  init_data(100,4)
+      new_centers = Buncher::cluster(elements,[1]*2,:min_size=>2)
       dump(new_centers)
-      assert_equal(new_centers.size,1)
+      assert_equal(new_centers.size,4)
   end
 
   # WWW=<<-'EOS'

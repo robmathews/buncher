@@ -1,6 +1,6 @@
 require 'buncher/buncher'
 module Buncher
-  VERSION = "1.0.2"
+  VERSION = "1.0.3"
   # your cluster needs to look like this. Make a bunch of them and pass them in. It's ok to pass in empty elements to start.
   class Cluster
     attr_accessor :elements
@@ -60,14 +60,13 @@ module Buncher
 
   # run the clustering algorithm until have calculated the current number of clusters, taken from this paper:
   # http://papers.nips.cc/paper/2526-learning-the-k-in-k-means.pdf
-  def self.cluster(elements, weights)
-    changed=true
-    round=0
+  def self.cluster(elements, weights,options={})
     solutions={}
-    # try all the sizes of clusters up to #elements. Ok, sure we could probably do something like 25% .. ok, I did
+    min_size=options[:min_size] || 1
+    # try all the sizes of clusters up to #elements. Ok, sure we could probably do something like 50% .. ok, I did
     # that.
     not_clustered = last_sK = last_aK =last_fK=nil
-    max_clusters=[1,(elements.size/2).floor].max
+    max_clusters=[min_size,(elements.size/2).floor].max
     (1..max_clusters).each do |number_clusters|
       initial_centers = choose_centers(elements, weights, number_clusters) # C++ Native code
       centers = initial_centers.map(&:dup)
@@ -76,13 +75,12 @@ module Buncher
       not_clustered ||=centers
       last_fK, last_sK, last_aK = fK(centers,last_sK, last_aK,weights)
       puts "summary #{number_clusters}: fK() = #{last_fK}, last_sK=#{last_sK} last_aK=#{last_aK} "
-      puts
-      solutions[last_fK]=centers
+      solutions[last_fK]=centers if number_clusters >= min_size
       # break if number_clusters == 2 ## debugging
     end
-    min_fK =solutions.keys.sort.first
+    min_fK =solutions.keys.sort.first || 1.0
     if min_fK > 0.85
-      not_clustered # ie, not clustered at all
+      nil # ie, not clustered at all
     else
       solutions[min_fK]
     end
