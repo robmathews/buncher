@@ -1,6 +1,6 @@
 require 'buncher/buncher'
 module Buncher
-  VERSION = "1.0.1"
+  VERSION = "1.0.2"
   # your cluster needs to look like this. Make a bunch of them and pass them in. It's ok to pass in empty elements to start.
   class Cluster
     attr_accessor :elements
@@ -46,9 +46,9 @@ module Buncher
     end
   end
 
-  def self.fK(centers,last_sK, last_aK)
+  def self.fK(centers,last_sK, last_aK,weights)
     # from here - http://www.ee.columbia.edu/~dpwe/papers/PhamDN05-kmeans.pdf
-    sK = centers.inject(0) {|acc, val| acc + val.distortion}
+    sK = centers.inject(0) {|acc, val| acc + val.distortion(weights)}
     aK = calc_aK(centers, last_aK) if centers.size > 1
     if centers.size == 1 || (last_sK||0).zero?
       [1,sK, aK || 0]
@@ -60,21 +60,21 @@ module Buncher
 
   # run the clustering algorithm until have calculated the current number of clusters, taken from this paper:
   # http://papers.nips.cc/paper/2526-learning-the-k-in-k-means.pdf
-  def self.cluster(elements)
+  def self.cluster(elements, weights)
     changed=true
     round=0
     solutions={}
     # try all the sizes of clusters up to #elements. Ok, sure we could probably do something like 25% .. ok, I did
     # that.
     not_clustered = last_sK = last_aK =last_fK=nil
-    max_clusters=[1,elements.size].max
+    max_clusters=[1,(elements.size/2).floor].max
     (1..max_clusters).each do |number_clusters|
-      initial_centers = choose_centers(elements, number_clusters) # C++ Native code
+      initial_centers = choose_centers(elements, weights, number_clusters) # C++ Native code
       centers = initial_centers.map(&:dup)
-      centers = kmeans(centers,elements) ## C++ Native code
+      centers = kmeans(centers,elements,weights) ## C++ Native code
       yield(elements, centers, initial_centers) if block_given?
       not_clustered ||=centers
-      last_fK, last_sK, last_aK = fK(centers,last_sK, last_aK)
+      last_fK, last_sK, last_aK = fK(centers,last_sK, last_aK,weights)
       puts "summary #{number_clusters}: fK() = #{last_fK}, last_sK=#{last_sK} last_aK=#{last_aK} "
       puts
       solutions[last_fK]=centers
