@@ -1,6 +1,6 @@
 require 'buncher/buncher'
 module Buncher
-  VERSION = "1.0.3"
+  VERSION = "1.0.4"
   # your cluster needs to look like this. Make a bunch of them and pass them in. It's ok to pass in empty elements to start.
   class Cluster
     attr_accessor :elements
@@ -58,7 +58,7 @@ module Buncher
     end
   end
 
-  # run the clustering algorithm until have calculated the current number of clusters, taken from this paper:
+  # run the clustering algorithm until we have calculated the best number of clusters, taken from this paper:
   # http://papers.nips.cc/paper/2526-learning-the-k-in-k-means.pdf
   def self.cluster(elements, weights,options={})
     solutions={}
@@ -76,11 +76,11 @@ module Buncher
       last_fK, last_sK, last_aK = fK(centers,last_sK, last_aK,weights)
       puts "summary #{number_clusters}: fK() = #{last_fK}, last_sK=#{last_sK} last_aK=#{last_aK} "
       solutions[last_fK]=centers if number_clusters >= min_size
-      # break if number_clusters == 2 ## debugging
+      # break if number_clusters == 3 ## debugging
     end
     min_fK =solutions.keys.sort.first || 1.0
     if min_fK > 0.85
-      nil # ie, not clustered at all
+      elements.map {|ele| Cluster.new(ele,[ele])} # ie, not clustered at all
     else
       solutions[min_fK]
     end

@@ -26,9 +26,10 @@ public:
   Element() {}
   Element(VALUE rb_obj);
   VALUE rb_obj;
-  operator VALUE() {return rb_obj;}
   double squared_distance(Element& other, Weights& weights);
   double distance(Element& other, Weights& weights);
+  void sum(const Element& other);
+  operator VALUE();
 };
 
 class Elements: public vector<Element>
