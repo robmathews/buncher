@@ -4,8 +4,8 @@ require 'gnuplot'
 require "minitest/focus"
 
 def dump(centers)
-  puts "centers are"
-  centers.each {|ccc| puts "center #{ccc.center.inspect} #{ccc.elements[0]}, #{ccc.elements[1]}"}
+  puts "#{centers.size} centers are"
+  centers.each {|ccc| puts "center #{ccc.center.inspect} elements #{ccc.elements[0]}, #{ccc.elements[1]}"}
 end
 
 def init_data(number_points, number_clusters)
@@ -87,7 +87,7 @@ class TestBuncher < Minitest::Test
       assert_in_delta(new_centers.first.center[1],1.0,0.01)
   end
 
-    focus
+    
   def test_choose_centers_wrapper
       elements = [[1,1]]
       puts "test_choose_centers_wrapper - start"
@@ -102,19 +102,22 @@ class TestBuncher < Minitest::Test
       elements = init_data(100,3)
       new_centers = Buncher::choose_centers(elements, [1]*2, 3)
       dump(new_centers)
-      assert_equal(new_centers.size,3)
+      assert_equal(3, new_centers.size)
   end
+  
+  
   def test_min_size_works
-      elements =  init_data(100,4)
+      elements =  init_data(100,1)
       new_centers = Buncher::cluster(elements,[1]*2,:min_size=>2)
-      dump(new_centers)
-      assert_equal(new_centers.size,4)
+      assert(new_centers.size >=2,"at least 2 centers")
   end
+  focus
   def test_gaussian_distribution_of_100_points_in_3_clusters
     1.times do |run|
       # srand(843284148793854177950180651080082381)
       elements = init_data(100,3)
       # elements.each {|eee| puts "#{eee[0]},#{eee[1]}"}
+      graphfile=nil;
       # new_centers = Buncher::cluster(elements) {|elements,centers, initial_centers| puts "run #{run} setup";plot("/tmp/#{run}_centers_#{centers.size}.png",elements,initial_centers)}
       new_centers = Buncher::cluster(elements,[1]*2) {|elements,centers, initial_centers| 
         graphfile = "/tmp/#{run}_centers_#{centers.size}.png"
@@ -124,6 +127,8 @@ class TestBuncher < Minitest::Test
       puts "ERROR "*4 if new_centers.size != 3
       puts
       assert_equal(3,new_centers.size)
+      refute(new_centers.first.elements.empty?)
+      graphfile = "/tmp/#{run}_centers_3.png"
       `open #{graphfile}`
     end
   end

@@ -20,6 +20,21 @@ VALUE element_at(VALUE rb_array, int index)
     return rb_funcall(rb_array, rb_intern("at"),1,INT2NUM(index));
 }
 
+double coalesce(double in)
+{
+  return isnan(in) ? 0.0 : in;
+}
+
+double nullif(VALUE rb_float)
+{
+  return (rb_float == Qnil) ? NAN : NUM2DBL(rb_float);
+}
+
+VALUE rb_nullif(double in)
+{
+  return isnan(in) ? Qnil : DBL2NUM(in);
+}
+
 Weights::Weights(VALUE rb_element)
 {
   int element_size = array_size(rb_element);
@@ -36,9 +51,22 @@ Element::Element(VALUE rb_element)
   rb_obj = rb_element;
   for(int jjj=0;jjj<element_size;jjj++)
   {
-    double value = NUM2DBL(element_at(rb_element, jjj));
+    double value = nullif(element_at(rb_element, jjj));
     push_back(value);
   }  
+}
+
+Element::operator VALUE()
+{
+  if(rb_obj)
+    return rb_obj;
+  else
+  {
+    VALUE element_rb = new_array();  
+    for(int iii=0;iii<this->size();iii++)
+      ::rb_funcall(element_rb, rb_intern("<<"),1,rb_nullif((*this)[iii]));
+    return element_rb;
+  }
 }
 
 double Element::squared_distance(Element& other, Weights& weights)
@@ -50,14 +78,21 @@ double Element::distance(Element& other, Weights& weights)
 {
   double rslt=0.0;
   double sum=0.0;
-  for(int iii=0;iii<size();iii++){
-      double distance = (*this)[iii] - other[iii];
+  for(int iii=0;iii<size();iii++)
+    if(!(isnan((*this)[iii]) && isnan(other[iii])))
+    {
+      double distance = coalesce((*this)[iii]) - coalesce(other[iii]);
       sum+=weights[iii];
       rslt+=abs(distance)*weights[iii];
-  }
+    }
   return rslt/sum;
 }
 
+void Element::sum(const Element& other)
+{
+  for(int iii=0;iii<this->size();iii++)
+    (*this)[iii]+=other[iii];
+}
 
 Elements::Elements(VALUE rb_elements)
 {
@@ -100,23 +135,16 @@ Elements::operator VALUE()
   return elements_rb;
 }
 
-Element pairwise_sum(Element& a, Element& b)
-{
-  Element result;
-  result.reserve(a.size());
-  for(int iii=0;iii<a.size();iii++)
-    result[iii]=a[iii]+b[iii];
-  return result;
-}
 /* 
   Elements are all the points in the world
   Element is a single point, which contains 127 numbers in the flavour profile world
 */
 Element Elements::calculate_center()
 {
-  Element zero;
-  zero.resize(this->begin()->size(),0.0);
-  Element center = accumulate(this->begin(), this->end(), zero, pairwise_sum);
+  Element center;
+  center.resize(this->begin()->size(),0.0);
+  for(int iii=0;iii<this->size();iii++)
+    center.sum((*this)[iii]);
   for(int iii=0;iii<center.size() && this->size() > 0;iii++)
     center[iii]=center[iii]/size();
   return center;
