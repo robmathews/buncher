@@ -4,7 +4,7 @@ require 'mkmf'
 # Give it a name
 extension_name = 'buncher'
 
-self.class::CONFIG['CXX'] = "#{self.class::CONFIG['CXX']} -std=gnu++0x"
+self.class::CONFIG['CXX'] = "#{self.class::CONFIG['CXX']} -std=c++11"
 # The destination
 dir_config(extension_name)
 # Do the work
