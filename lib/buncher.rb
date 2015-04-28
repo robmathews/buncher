@@ -1,6 +1,6 @@
 require 'buncher/buncher'
 module Buncher
-  VERSION = "1.0.5"
+  VERSION = "1.0.6"
   # your cluster needs to look like this. Make a bunch of them and pass them in. It's ok to pass in empty elements to start.
   class Cluster
     attr_accessor :elements

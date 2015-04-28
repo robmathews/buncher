@@ -66,7 +66,6 @@ end
 
 class TestBuncher < Minitest::Test
 
-  focus
 
   def test_distance
     element1= [1.0, 0.5, 0.533333333333333, 1.0, 0.0, 0.0, 0.333333333333333, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.333333333333333, 0.333333333333333, 0.666666666666667, 0.0, 0.0, 1.0, 0.333333333333333, 0.333333333333333, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.333333333333333, 0.0, 0.0, 0.0, 0.0, 0.0, 0.333333333333333, 0.0, 0.333333333333333, 0.0, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.333333333333333, 0.333333333333333, 0.0, 0.333333333333333, 0.4, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4, 0.333333333333333, 0.0, 0.666666666666667, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -80,6 +79,7 @@ class TestBuncher < Minitest::Test
     weights = [1] * 3
     assert_in_delta(Buncher::distance(element1,element2, weights),0.5,0.01)
   end
+  # focus
   def test_should_find_the_one_center
       elements = [[1,1]]
       starting_centers = elements.sample(1).map {|aaa| Buncher::Cluster.new(aaa)}
@@ -107,7 +107,7 @@ class TestBuncher < Minitest::Test
       assert_equal(3, new_centers.size)
   end
   
-  
+  # focus
   def test_min_size_works
       elements =  init_data(100,1)
       new_centers = Buncher::cluster(elements,[1]*2,:min_size=>2)

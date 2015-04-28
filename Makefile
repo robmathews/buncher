@@ -71,7 +71,7 @@ warnflags = -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long 
 CFLAGS   = -fno-common  -O3 -Wno-error=shorten-64-to-32  -pipe $(ARCH_FLAG)
 INCFLAGS = -I. -I$(arch_hdrdir) -I$(hdrdir)/ruby/backward -I$(hdrdir) -I$(srcdir)
 DEFS     = 
-CPPFLAGS =  -Iext/boost/1.57.0/include -I/Users/rob/.rbenv/versions/1.9.3-p547/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE $(DEFS) $(cppflags)
+CPPFLAGS =  -I/Users/rob/.rbenv/versions/1.9.3-p547/include  -D_XOPEN_SOURCE -D_DARWIN_C_SOURCE $(DEFS) $(cppflags)
 CXXFLAGS = $(CFLAGS) $(cxxflags)
 ldflags  = -L. -L/Users/rob/.rbenv/versions/1.9.3-p547/lib  -L/usr/local/lib
 dldflags = -Wl,-undefined,dynamic_lookup -Wl,-multiply_defined,suppress -Wl,-flat_namespace 
@@ -104,8 +104,8 @@ TOUCH = exit >
 
 preload = 
 
-libpath = . $(libdir) ext/boost/1.57.0/lib
-LIBPATH =  -L. -L$(libdir) -Lext/boost/1.57.0/lib
+libpath = . $(libdir)
+LIBPATH =  -L. -L$(libdir)
 DEFFILE = 
 
 CLEANFILES = mkmf.log
