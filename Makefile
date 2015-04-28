@@ -54,7 +54,7 @@ vendorarchdir = $(vendorlibdir)/$(sitearch)
 NULLCMD = :
 
 CC = gcc
-CXX = g++ -std=gnu++0x
+CXX = g++ -std=c++11
 LIBRUBY = $(LIBRUBY_A)
 LIBRUBY_A = lib$(RUBY_SO_NAME)-static.a
 LIBRUBYARG_SHARED = 
