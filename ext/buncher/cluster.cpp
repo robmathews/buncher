@@ -1,7 +1,6 @@
 #include "definitions.hpp"
 #include <random>
 #include <limits>
-#include <boost/foreach.hpp>
 #include <math.h>
 
 VALUE new_array()
@@ -78,7 +77,7 @@ double Element::distance(Element& other, Weights& weights)
 {
   double rslt=0.0;
   double sum=0.0;
-  for(int iii=0;iii<size();iii++)
+  for(int iii=0;iii<size() && iii<other.size() && iii<weights.size();iii++)
     if(!(isnan((*this)[iii]) && isnan(other[iii])))
     {
       double distance = coalesce((*this)[iii]) - coalesce(other[iii]);
@@ -90,7 +89,7 @@ double Element::distance(Element& other, Weights& weights)
 
 void Element::sum(const Element& other)
 {
-  for(int iii=0;iii<this->size();iii++)
+  for(int iii=0;iii<this->size()&& iii<other.size();iii++)
     (*this)[iii]+=other[iii];
 }
 
@@ -259,10 +258,10 @@ void Bunch::calculate_center()
 double calculate_distance(Bunches old_bunches, Bunches& new_bunches)
 {
   double rslt=0;
-  BOOST_FOREACH(Bunch new_bunch, new_bunches)
+  for(int iii = 0; iii < new_bunches.size(); iii++)
   {
-    int index = new_bunch.closest(old_bunches);
-    rslt+=old_bunches[index].squared_distance(new_bunch);
+    int index = new_bunches[iii].closest(old_bunches);
+    rslt+=old_bunches[index].squared_distance(new_bunches[iii]);
     old_bunches.erase(old_bunches.begin()+index);
   }
   return rslt;
@@ -300,12 +299,13 @@ extern "C" VALUE kmeans(VALUE klass, VALUE rb_centers, VALUE rb_elements, VALUE 
   int count = 0;
   while(true)
   {
-    BOOST_FOREACH(Bunch center, centers) {center.clear();}
+
+    for(int iii=0;iii<centers.size();iii++) {centers[iii].clear();}
     Jobs jobs;
     // since we only have one job right now...don't worry about splitting.
     jobs.push_back(Job(centers, elements));
-    BOOST_FOREACH(Job job, jobs) { job.run();}
-    BOOST_FOREACH(Bunch center, centers) {center.calculate_center();}
+    for(int iii=0;iii<jobs.size();iii++) {jobs[iii].run();}
+
     if(!previous_iteration.empty())
     {
       double distance = calculate_distance(previous_iteration, centers);
@@ -314,16 +314,20 @@ extern "C" VALUE kmeans(VALUE klass, VALUE rb_centers, VALUE rb_elements, VALUE 
     }
     previous_iteration = centers;
   }
+
   return centers;
 }
 
 void Job::run()
 {
 
-  BOOST_FOREACH(Element& element, elements){
+  for(int iii=0;iii<elements.size();iii++) 
+  {
+    Element& element(elements[iii]);
     Bunch* best_bunch(NULL);
     double best_distance = std::numeric_limits<double>::max();
-    BOOST_FOREACH(Bunch& bunch, bunches){
+    for(int jjj=0;jjj<bunches.size();jjj++) {
+      Bunch& bunch(bunches[jjj]);
       double distance = bunch.center.squared_distance(element,bunch.weights);
       if(distance < best_distance)
       {
@@ -341,8 +345,7 @@ extern "C" VALUE distortion(VALUE rb_cluster, VALUE rb_weights)
   Elements elements(::rb_funcall(rb_cluster, rb_intern("elements"),0,NULL));
   Weights weights(rb_weights);
   double sum=0.0;
-  BOOST_FOREACH(Element element, elements) {sum+=element.squared_distance(center,weights);}
-  // printf("distortion: elements.size()=%lu, sum was %f\n",elements.size(),sum);
+  for(int iii=0;iii<elements.size();iii++) {sum+=elements[iii].squared_distance(center,weights);}
   return DBL2NUM(sum);
 }
 

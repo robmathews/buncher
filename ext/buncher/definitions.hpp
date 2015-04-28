@@ -1,5 +1,4 @@
 #pragma once
-#include <boost/array.hpp>
 #include <string>
 #include <algorithm>
 #include <iostream>
