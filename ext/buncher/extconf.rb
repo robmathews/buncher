@@ -8,4 +8,4 @@ self.class::CONFIG['CXX'] = "#{self.class::CONFIG['CXX']} -std=c++11"
 # The destination
 dir_config(extension_name)
 # Do the work
-create_makefile(extension_name)
+create_makefile('buncher/buncher')
