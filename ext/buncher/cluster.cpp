@@ -1,7 +1,5 @@
 #include "definitions.hpp"
 #include <random>
-#include <limits>
-#include <math.h>
 
 VALUE new_array()
 {
@@ -21,7 +19,7 @@ VALUE element_at(VALUE rb_array, int index)
 
 double coalesce(double in)
 {
-  return isnan(in) ? 0.0 : in;
+  return std::isnan(in) ? 0.0 : in;
 }
 
 double nullif(VALUE rb_float)
@@ -31,7 +29,7 @@ double nullif(VALUE rb_float)
 
 VALUE rb_nullif(double in)
 {
-  return isnan(in) ? Qnil : DBL2NUM(in);
+  return std::isnan(in) ? Qnil : DBL2NUM(in);
 }
 
 Weights::Weights(VALUE rb_element)
@@ -78,7 +76,7 @@ double Element::distance(Element& other, Weights& weights)
   double rslt=0.0;
   double sum=0.0;
   for(int iii=0;iii<size() && iii<other.size() && iii<weights.size();iii++)
-    if(!(isnan((*this)[iii]) && isnan(other[iii])))
+    if(!(std::isnan((*this)[iii]) && std::isnan(other[iii])))
     {
       double distance = coalesce((*this)[iii]) - coalesce(other[iii]);
       sum+=weights[iii];
