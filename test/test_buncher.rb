@@ -110,8 +110,9 @@ class TestBuncher < Minitest::Test
   # focus
   def test_min_size_works
       elements =  init_data(100,1)
-      new_centers = Buncher::cluster(elements,[1]*2,:min_size=>2)
-      assert(new_centers.size >=2,"at least 2 centers")
+      new_centers = Buncher::cluster(elements,[1]*2,:min_size=>2,:plausable=>3)
+      assert(new_centers.kind_of? Hash)
+      assert(new_centers.first.size >=2,"at least 2 centers")
   end
   def test_gaussian_distribution_of_100_points_in_3_clusters
     1.times do |run|
@@ -124,6 +125,7 @@ class TestBuncher < Minitest::Test
         graphfile = "/tmp/#{run}_centers_#{centers.size}.png"
         plot(graphfile,elements,centers, initial_centers)
       }
+      new_centers=new_centers.first
       puts "run #{run}: k is #{new_centers.size}, seed was #{srand}"
       puts "ERROR "*4 if new_centers.size != 3
       puts

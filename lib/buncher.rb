@@ -1,6 +1,6 @@
 require 'buncher/buncher'
 module Buncher
-  VERSION = "1.0.11"
+  VERSION = "1.0.12"
   # your cluster needs to look like this. Make a bunch of them and pass them in. It's ok to pass in empty elements to start.
   class Cluster
     attr_accessor :elements
@@ -60,7 +60,12 @@ module Buncher
 
   # run the clustering algorithm until we have calculated the best number of clusters, taken from this paper:
   # http://papers.nips.cc/paper/2526-learning-the-k-in-k-means.pdf
+  # min_size: force at least min_size clusters to be created.
+  # plausable: return a hash of #plausable values for k. Sometimes the data has multiple possible answers, so return
+  # the top n of them in a hash of score=>plausable solutions. lowest scores are best, but sometimes there are 
+  # "ties".
   def self.cluster(elements, weights,options={})
+    plausable=options[:plausable] || 1
     solutions={}
     min_size=options[:min_size] || 1
     # try all the sizes of clusters up to #elements. Ok, sure we could probably do something like 50% .. ok, I did
@@ -79,11 +84,14 @@ module Buncher
       solutions[last_fK]=centers if number_clusters >= min_size
       # break if number_clusters == 3 ## debugging
     end
-    min_fK =solutions.keys.sort.first || 1.0
-    if min_fK > 0.85
-      elements.map {|ele| Cluster.new(ele,[ele])} # ie, not clustered at all
+    solutions.select! {|min_fK| min_fK <= 0.85}
+    min_fKs =solutions.keys.sort[0...plausable] || [1.0]
+    if options[:plausable]
+      solutions.slice(*min_fKs)
+    elsif !min_fKs.empty?
+      solutions[min_fKs.first]
     else
-      solutions[min_fK]
+      elements.map {|ele| Cluster.new(ele,[ele])} # ie, not clustered at all
     end
   end
 end
