@@ -1,0 +1,15 @@
+*~
+.DS_Store
+log/*.log
+index
+tmp/
+pkg/
+doc/
+web.tmproj
+.project
+.rvmrc
+.rbenv-version
+.env
+.tddium*
+.yardoc
+lib/buncher/*.bundle
