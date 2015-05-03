@@ -1,6 +1,7 @@
 .autotest
 History.txt
 Manifest.txt
+Gemfile
 README.txt
 Rakefile
 ext/buncher/cluster.cpp

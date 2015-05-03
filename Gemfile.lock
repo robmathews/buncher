@@ -1,0 +1,37 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    gnuplot (2.6.2)
+    hoe (3.13.1)
+      rake (>= 0.8, < 11.0)
+    hoe-bundler (1.2.0)
+      hoe (>= 2.2.0)
+    hoe-gemspec (1.0.0)
+      hoe (>= 2.2.0)
+    hoe-git (1.6.0)
+    json (1.8.2)
+    minitest (5.6.1)
+    minitest-focus (1.1.1)
+      minitest (>= 4, < 6)
+    rake (10.4.2)
+    rake-compiler (0.9.5)
+      rake
+    rdoc (4.2.0)
+      json (~> 1.4)
+    rubystats (0.2.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  gnuplot
+  hoe (~> 3.13)
+  hoe-bundler (>= 1.1)
+  hoe-gemspec (>= 1.0)
+  hoe-git (>= 1.4)
+  minitest (~> 5.6)
+  minitest-focus
+  rake (>= 0.9)
+  rake-compiler (~> 0.7)
+  rdoc (~> 4.0)
+  rubystats

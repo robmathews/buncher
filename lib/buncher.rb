@@ -87,7 +87,7 @@ module Buncher
     solutions.select! {|min_fK| min_fK <= 0.85}
     min_fKs =solutions.keys.sort[0...plausable] || [1.0]
     if options[:plausable]
-      solutions.slice(*min_fKs)
+      solutions.select {|key| min_fKs.include?(key)}
     elsif !min_fKs.empty?
       solutions[min_fKs.first]
     else
