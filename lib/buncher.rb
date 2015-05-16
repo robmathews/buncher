@@ -1,6 +1,6 @@
 require 'buncher/buncher'
 module Buncher
-  VERSION = "1.0.14"
+  VERSION = "1.0.15"
   # your cluster needs to look like this. Make a bunch of them and pass them in. It's ok to pass in empty elements to start.
   class Cluster
     attr_accessor :elements
@@ -90,7 +90,7 @@ module Buncher
       if min_fKs.empty?
         solutions.select {|key| min_fKs.include?(key)}.sort
       else
-        [1.0, elements.map {|ele| Cluster.new(ele,[ele])}] # ie, not clustered at all
+        {1.0 => elements.map {|ele| Cluster.new(ele,[ele])}} # ie, not clustered at all
       end
     elsif !min_fKs.empty?
       solutions[min_fKs.first]
